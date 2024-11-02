@@ -59,14 +59,13 @@ class Customer:
             try:
                 response = self.stub.MsgDelivery(request)
                 if interface == 'query':
+                    # Only append after each specific action completes
                     self.recvMsg.append({
-                        "id": event['id'],
                         "interface": "query",
                         "balance": response.balance
                     })
                 else:
                     self.recvMsg.append({
-                        "id": event['id'],
                         "interface": interface,
                         "result": response.result
                     })
@@ -74,7 +73,7 @@ class Customer:
             except grpc.RpcError as e:
                 logger.error(f"Error executing {interface} for Customer {self.id}: {e.details()}")
 
-            # Sleep for a short time to ensure sequential execution and allow propagation to complete
+            # Ensure a short delay to maintain sequence and propagation time
             time.sleep(self.sleep_duration)
 
         return self.recvMsg
