@@ -86,13 +86,15 @@ class Branch(example_pb2_grpc.RPCServicer):
         return example_pb2.Response(interface="propagate_withdraw", result="success")
 
     def Propagate_To_Branches(self, interface, money):
-        """Propagates deposit or withdrawal actions to all other branches with acknowledgment."""
+        """Propagates deposit or withdrawal actions to all other branches with blocking acknowledgment."""
         for stub in self.stubList:
             try:
                 request = example_pb2.Request(interface=interface, money=money)
                 response = stub.MsgDelivery(request)
                 if response.result != "success":
                     logger.warning(f"Failed to propagate {interface} to branch.")
-                time.sleep(0.1)  # Small delay to allow propagation
             except grpc.RpcError as e:
                 logger.error(f"Error propagating to branch: {e.details()}")
+        
+        # Ensure delay for all branches to update
+        time.sleep(0.1)  # Adjusted delay as needed to ensure updates finalize
