@@ -73,7 +73,7 @@ class Customer:
             except grpc.RpcError as e:
                 logger.error(f"Error executing {interface} for Customer {self.id}: {e.details()}")
 
-            # Ensure a short delay to maintain sequence and propagation time
+            # Delay after each event to allow complete propagation and ordering
             time.sleep(self.sleep_duration)
 
         return self.recvMsg
