@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package banking;
+
+// 定义银行服务
+service BankService {
+  // 客户到分支的接口
+  rpc Query (QueryRequest) returns (QueryResponse) {}
+  rpc Deposit (DepositRequest) returns (DepositResponse) {}
+  rpc Withdraw (WithdrawRequest) returns (WithdrawResponse) {}
+
+  // 分支之间的接口
+  rpc PropagateDeposit (PropagateRequest) returns (PropagateResponse) {}
+  rpc PropagateWithdraw (PropagateRequest) returns (PropagateResponse) {}
+}
+
+// 查询请求
+message QueryRequest {
+  int32 customer_id = 1;
+}
+
+// 查询响应
+message QueryResponse {
+  int32 balance = 1;
+}
+
+// 存款请求
+message DepositRequest {
+  int32 customer_id = 1;
+  int32 amount = 2;
+}
+
+// 存款响应
+message DepositResponse {
+  string result = 1;
+}
+
+// 取款请求
+message WithdrawRequest {
+  int32 customer_id = 1;
+  int32 amount = 2;
+}
+
+// 取款响应
+message WithdrawResponse {
+  string result = 1;
+}
+
+// 传播请求（用于存款和取款）
+message PropagateRequest {
+  int32 branch_id = 1;
+  int32 amount = 2;
+}
+
+// 传播响应
+message PropagateResponse {
+  string result = 1;
+}
