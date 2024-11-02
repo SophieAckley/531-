@@ -2,8 +2,8 @@ import grpc
 import example_pb2
 import example_pb2_grpc
 from concurrent import futures
-import logging
 import time
+import logging
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -56,6 +56,7 @@ class Branch(example_pb2_grpc.RPCServicer):
         # Update balance
         self.balance += request.money
         self.Propagate_To_Branches("propagate_deposit", request.money)
+        logger.info(f"Branch {self.id} balance after deposit: {self.balance}")
         return example_pb2.Response(interface="deposit", result="success")
 
     def Withdraw(self, request):
@@ -67,6 +68,7 @@ class Branch(example_pb2_grpc.RPCServicer):
         if self.balance >= request.money:
             self.balance -= request.money
             self.Propagate_To_Branches("propagate_withdraw", request.money)
+            logger.info(f"Branch {self.id} balance after withdrawal: {self.balance}")
             return example_pb2.Response(interface="withdraw", result="success")
         else:
             return example_pb2.Response(interface="withdraw", result="fail")
@@ -74,27 +76,23 @@ class Branch(example_pb2_grpc.RPCServicer):
     def Propagate_Deposit(self, request):
         """Receives deposit propagation from other branches and updates balance."""
         self.balance += request.money
+        logger.info(f"Branch {self.id} balance after propagated deposit: {self.balance}")
         return example_pb2.Response(interface="propagate_deposit", result="success")
 
     def Propagate_Withdraw(self, request):
         """Receives withdrawal propagation from other branches and updates balance."""
         self.balance -= request.money
+        logger.info(f"Branch {self.id} balance after propagated withdrawal: {self.balance}")
         return example_pb2.Response(interface="propagate_withdraw", result="success")
 
     def Propagate_To_Branches(self, interface, money):
-        """Propagates deposit or withdrawal actions to all other branches."""
+        """Propagates deposit or withdrawal actions to all other branches with acknowledgment."""
         for stub in self.stubList:
             try:
                 request = example_pb2.Request(interface=interface, money=money)
-                stub.MsgDelivery(request)
-                time.sleep(0.1) 
+                response = stub.MsgDelivery(request)
+                if response.result != "success":
+                    logger.warning(f"Failed to propagate {interface} to branch.")
+                time.sleep(0.1)  # Small delay to allow propagation
             except grpc.RpcError as e:
                 logger.error(f"Error propagating to branch: {e.details()}")
-
-def serve(branch):
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    example_pb2_grpc.add_BankServiceServicer_to_server(branch, server)
-    server.add_insecure_port(f'[::]:{50000 + branch.id}')
-    server.start()
-    logger.info(f"Branch server started at port {50000 + branch.id}")
-    server.wait_for_termination()
