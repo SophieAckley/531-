@@ -2,8 +2,6 @@ import json
 import time
 from concurrent import futures
 import grpc
-import example_pb2
-import example_pb2_grpc
 from branch import Branch, serve
 from customer import Customer
 import logging
