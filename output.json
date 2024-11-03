@@ -2,17 +2,17 @@
     {
       "id": 1,
       "recv": [
-        { "interface": "query", "balance": 400 },
+        { "interface": "query", "balance": 410 },
         { "interface": "deposit", "result": "success" },
-        { "interface": "query", "balance": 400 }
+        { "interface": "query", "balance": 410 }
       ]
     },
     {
       "id": 2,
       "recv": [
-        { "interface": "query", "balance": 600 },
+        { "interface": "query", "balance": 420 },
         { "interface": "withdraw", "result": "success" },
-        { "interface": "query", "balance": 600 }
+        { "interface": "query", "balance": 420 }
       ]
     },
     {
@@ -20,7 +20,7 @@
       "recv": [
         { "interface": "deposit", "result": "success" },
         { "interface": "withdraw", "result": "success" },
-        { "interface": "query", "balance": 600 }
+        { "interface": "query", "balance": 430 }
       ]
     }
   ]
