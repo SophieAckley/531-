@@ -1,8 +1,8 @@
 import json
 import time
 import grpc
-import branch_pb2
-import branch_pb2_grpc
+import banks_pb2
+import banks_pb2_grpc
 from customer import Customer
 
 def run_customer(customer_data):
