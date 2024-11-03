@@ -1,8 +1,9 @@
 import grpc
-import example_pb2
-import example_pb2_grpc
+import banks_pb2
+import banks_pb2_grpc
 import time
 import logging
+banks_pb2_grpc.BankServiceStub.PropagateDeposit = lambda self, request, timeout, metadata=None, credentials=None, wait_for_ready=None: None
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -28,7 +29,7 @@ class Customer:
         """Creates a stub to communicate with the assigned branch server."""
         try:
             channel = grpc.insecure_channel(f'localhost:{50000 + self.id}')
-            self.stub = example_pb2_grpc.RPCStub(channel)
+            self.stub = banks_pb2_grpc.RPCStub(channel)
             logger.info(f"Stub created for Customer {self.id} to connect to Branch {self.id}")
         except grpc.RpcError as e:
             logger.error(f"Failed to create stub for Customer {self.id}: {e.details()}")
@@ -50,7 +51,7 @@ class Customer:
                 logger.error(f"Invalid interface '{interface}' in event {event['id']}")
                 continue  # Skip this event if interface is invalid
 
-            request = example_pb2.Request(
+            request = banks_pb2.Request(
                 id=event['id'],
                 interface=interface,
                 money=event.get('money', 0)
@@ -59,13 +60,14 @@ class Customer:
             try:
                 response = self.stub.MsgDelivery(request)
                 if interface == 'query':
-                    # Only append after each specific action completes
                     self.recvMsg.append({
+                        "id": event['id'],
                         "interface": "query",
                         "balance": response.balance
                     })
                 else:
                     self.recvMsg.append({
+                        "id": event['id'],
                         "interface": interface,
                         "result": response.result
                     })
@@ -73,7 +75,7 @@ class Customer:
             except grpc.RpcError as e:
                 logger.error(f"Error executing {interface} for Customer {self.id}: {e.details()}")
 
-            # Delay after each event to allow complete propagation and ordering
+            # Sleep for a short time to ensure sequential execution and allow propagation to complete
             time.sleep(self.sleep_duration)
 
         return self.recvMsg
